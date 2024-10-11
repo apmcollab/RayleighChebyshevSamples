@@ -444,7 +444,7 @@ int main()
     printf("\nXXXX   Eigenvector errors using stopping condition RESIDUAL_ONLY\n");
     printf("XXXX   Expected maximal error is tolerance specified =  %10.5e \n\n",subspaceTol);
     
-    printf("nEigenvector (2,2) error (L2)  : %10.5e \n",eigVecErrorL2);
+    printf("Eigenvector (2,2) error (L2)  : %10.5e \n",eigVecErrorL2);
     printf("Eigenvector (2,2) error (Inf) : %10.5e \n",eigVecErrorInf);
 
 	printf("\nXXX Execution Completed XXXX\n");
