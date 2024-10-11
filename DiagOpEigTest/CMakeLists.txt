@@ -2,13 +2,13 @@
 #  CMakeLists.txt
 #
 #  Generator      : CMakeCreator 
-#  XML data file  : CMakeLaplaceOp2dEigTest_FD.xml
+#  XML data file  : CMakeDiagOpEigTest.xml
 #  Date           : 2024-10-11 
 #
 
 cmake_minimum_required (VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
-project (LaplaceOp2dEigTest_FD)
+project (DiagOpEigTest)
 
 message(STATUS "System Name ${CMAKE_SYSTEM_NAME}")
 
@@ -127,13 +127,13 @@ endif()
 
 enable_testing()
 
-file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/Testing/LaplaceOp2dEigTest_FD")
+file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/Testing/DiagOpEigTest")
 
 #####################################################
 # Specify list of target sources containing "main"  
 #####################################################
 
-set(Main_Sources "LaplaceOp2dEigTest_FD.cpp" )
+set(Main_Sources "DiagOpEigTest.cpp" )
 
 #
 #   Loop over build commands for each target  
@@ -143,11 +143,11 @@ foreach(mainFile ${Main_Sources} )
 string( REPLACE ".cpp" "" mainExecName ${mainFile} )
 
 ##################################################################
-#   Target :  LaplaceOp2dEigTest_FD
+#   Target :  DiagOpEigTest
 ##################################################################
 
-    if("${mainExecName}.cpp" STREQUAL "LaplaceOp2dEigTest_FD.cpp")
-      add_executable( ${mainExecName} "LaplaceOp2dEigTest_FD.cpp" )
+    if("${mainExecName}.cpp" STREQUAL "DiagOpEigTest.cpp")
+      add_executable( ${mainExecName} "DiagOpEigTest.cpp" )
          
       set_property(TARGET ${mainExecName} PROPERTY CXX_STANDARD 17)
          

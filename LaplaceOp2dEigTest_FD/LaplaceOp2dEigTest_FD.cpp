@@ -1,20 +1,22 @@
-#include <iostream>
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <algorithm>
-//
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // LaplaceOp2dEigTest_FD.cpp
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//
+// Laplace Operator 2D Eigensystem Test : Finite Difference Operator
 //
 // A test code that demonstrates the use of the RayleighChebyshev procedure
 // to determine a specified number of eigenvectors and eigenvalues of
 // the five point discretization to the Laplace operator with
 // homogeneous Dirichlet boundary conditions. 
 //
-// The operator is implemented as a finite difference operator, 
-// e.g. the operator is not represented as a matrix and the vector space 
-// is the set of "2D" vectors associated with the values of the 
-// nodes of a uniform 2D rectangular grid. 
+// The linear operator is implemented in LaplaceOp2d.h as a finite difference operator,
+// e.g. the application of the operator does not use a matrix representation, but
+// a double for loop over grid points of the 2D array of values associated with
+// the nodes of a uniform rectangular grid.
+//
+// The "vector" class used is GridFunction2D, a class where mathematical vector
+// operations are implemented for the 2D array of values associated with the nodes
+// of the grid.
 //
 // Note: The finite difference operator is defined at all points
 // of the rectangular grid and sets boundary values to 0.
@@ -24,7 +26,7 @@
 // boundary values. In order to do this, both the discrete Laplace
 // operator AND the randomize operator must set the boundary values
 // to zero after each invocation. 
-// 
+//
 //
 // The compilation of this program does not require a Lapack installation. 
 //
@@ -33,7 +35,7 @@
 //             [Samples Directory]
 // -------------------------------------------------
 //         |                     |                
-//   [LaplaceOp2dEigTest]   [Components]
+// [LaplaceOp2dEigTest_FD]   [Components]
 //                               |
 //                      -------------------
 //                      Component directories
@@ -47,7 +49,7 @@
 //
 // The command line compilation command is
 //
-// g++ LaplaceOp2dEigTest.cpp -std=c++17 -D RC_WITHOUT_LAPACK_ -I../Components   -o LaplaceOp2dEigTest.exe
+// g++ LaplaceOp2dEigTest_FD.cpp -std=c++17 -D RC_WITHOUT_LAPACK_ -I../Components   -o LaplaceOp2dEigTest.exe
 //
 // To enable OpenMP add -fopenmp to the above command line (or the equivalent flag for your compiler).
 //
@@ -67,17 +69,45 @@
 //
 // and then rerun the build steps above. 
 //
+// Reference:
 //
-// Oct. 10, 2024
+//   Christopher R. Anderson, "A Rayleigh-Chebyshev procedure for finding
+//   the smallest eigenvalues and associated eigenvectors of large sparse
+//   Hermitian matrices" Journal of Computational Physics,
+//  Volume 229 Issue 19, September, 2010.
 //
-
+// Created on: Oct 11, 2024
+//      Author: anderson
+//
+//#############################################################################
+//#
+//# Copyright  2024 Chris Anderson
+//#
+//# This program is free software: you can redistribute it and/or modify
+//# it under the terms of the Lesser GNU General Public License as published by
+//# the Free Software Foundation, either version 3 of the License, or
+//# (at your option) any later version.
+//#
+//# This program is distributed in the hope that it will be useful,
+//# but WITHOUT ANY WARRANTY; without even the implied warranty of
+//# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//# GNU General Public License for more details.
+//#
+//# For a copy of the GNU General Public License see
+//# <http://www.gnu.org/licenses/>.
+//#
+///#############################################################################
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <algorithm>
 
 #include "RayleighChebyshev/RayleighChebyshev.h"
 
 // Vector class used in test
 
 #include "GridFunctionNd/SCC_GridFunction2d.h"
-#include "GridFunctionNd/SCC_GridFunction2dUtility.h"
 
 // Operator that creates instances of vector class with random entries
 
@@ -109,8 +139,11 @@ int main()
     printf("\n");
 #endif
 
+//////////////////////////////////////////////////////////////////////////////////////
+//                         Test problem set up
+//////////////////////////////////////////////////////////////////////////////////////
 
-//   Problem set up.
+//  Specifying parameters for 2d grid and Laplace operator coefficient
 
 	double xMin = 0.0;
 	double xMax = 1.0;
@@ -131,7 +164,12 @@ int main()
 	long ny     = yPanels - 1;
 
 	double pi     =  3.141592653589793238;
-	double alpha  = -1.0;  // Coefficient of discrete Laplace operator
+
+
+    // Coefficient of discrete Laplace operator; using -1.0 so operator is postive definite.
+
+	double alpha  = -1.0;
+
 
     // Compute exact eigenvalues of the discrete operator knowing that 
     // the eigenvectors of the discrete operator are the dicrete sin functions
@@ -160,6 +198,10 @@ int main()
 
     std::sort(exactEigValues.begin(),exactEigValues.end());
 
+//////////////////////////////////////////////////////////////////////////////////////
+//                        Operator set up.
+//////////////////////////////////////////////////////////////////////////////////////
+
     // Instantiate Laplace Operator
 
     LaplaceOp2d Lop2d(alpha);
@@ -168,11 +210,6 @@ int main()
 
     SCC::RandOpDirichlet2d  randomOp;
 
-    // Allocate arrays for eigenvectors and eigenvalues
-
-    std::vector <SCC::GridFunction2d>  eigVectors;
-    std::vector <double>                  eigValues;
-
     // Declare an instance of the Raylegh-Chebyshev eigensystem procedure
 
     RayleighChebyshev < SCC::GridFunction2d, LaplaceOp2d , SCC::RandOpDirichlet2d > RCeigProcedure;
@@ -180,8 +217,16 @@ int main()
     //                         |                |                       |
     //                 vector class    linear operator class     randomize operator class
 
+    // Set diagnostics output
+
     RCeigProcedure.setEigDiagnosticsFlag(true);
     RCeigProcedure.setVerboseFlag(true);
+
+//////////////////////////////////////////////////////////////////////////////////////
+//                       Input/Output set up
+//////////////////////////////////////////////////////////////////////////////////////
+
+    // Creating input parameters
 
     SCC::GridFunction2d vTmp(xPanels,xMin,xMax,yPanels,yMin,yMax);     // A temporary vector is required as input. This vector must
                                                                        // be a non-null instance of the vector class
@@ -205,18 +250,29 @@ int main()
     //                                                  
     long eigCount              = dimension < 10 ? dimension : 10;
     
+    // Allocate vectors for output of eigenvectors and eigenvalues
+
+    std::vector <SCC::GridFunction2d>    eigVectors;
+    std::vector <double>                  eigValues;
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//           Computation of the eigensystem and evaluation of the error
+//////////////////////////////////////////////////////////////////////////////////////
+
     printf("\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
-    
-    printf("XXXX   LaplaceOp2dEig_Test Results XXXX\n\n");
+    printf("XXXX   LaplaceOp2dEigTest_FD Results XXXX\n\n");
     printf("XXXX   Operator implemented as finite difference operator XXXX\n");
     printf("XXXX   Using default parameters\n");
-    printf("XXXX   Tolerance Specified : %10.5e\n\n",subspaceTol);
-    
+    printf("XXXX   Tolerance specified : %10.5e\n\n",subspaceTol);
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
     
-
     RCeigProcedure.getMinEigenSystem(eigCount, subspaceTol, subspaceIncrementSize, bufferSize, vTmp,
     		Lop2d, randomOp, eigValues, eigVectors);
+
+
+    printf("\nXXXX   Eigenvalue errors using stopping condition DEFAULT = COMBINATION \n");
+    printf("XXXX   Expected maximal error is tolerance specified =  %10.5e \n\n",subspaceTol);
 
     printf("       Eigenvalue              Error       Relative Error \n");
     for(long  k = 0; k < eigCount; k++ )
@@ -226,7 +282,7 @@ int main()
     }
     
     //
-    // Check error in the first distinct computed eigenvector (k1 = 1 and k2=1) 
+    // Check error in the second distinct computed eigenvector (k1 = 2 and k2=2)
     //
 
     SCC::GridFunction2d exactEigVector(xPanels,xMin,xMax,yPanels,yMin,yMax);
@@ -239,7 +295,7 @@ int main()
     {
     x = xMin + i*hx;
     y = yMin + j*hy;
-    exactEigVector(i,j) = std::sin((pi*(x-xMin))/(xMax-xMin))*std::sin((pi*(y-yMin))/(yMax-yMin));
+    exactEigVector(i,j) = std::sin((2.0*pi*(x-xMin))/(xMax-xMin))*std::sin((2.0*pi*(y-yMin))/(yMax-yMin));
     }}
     
     // normalize 
@@ -248,23 +304,32 @@ int main()
     
     // fix up the sign if necessary 
 
-    if(exactEigVector.dot(eigVectors[0]) < 0) {exactEigVector *= -1.0;} 
+    if(exactEigVector.dot(eigVectors[3]) < 0) {exactEigVector *= -1.0;}
     
     // Compute the error 
     
     SCC::GridFunction2d eigVecError =  exactEigVector;
-    eigVecError -= eigVectors[0];
+    eigVecError -= eigVectors[3];
     
     double eigVecErrorL2   = eigVecError.norm2();
     double eigVecErrorInf = eigVecError.normInf();
     
     
-    printf("\n\nEigenvector (0,0) error (L2)  : %10.5e \n",eigVecErrorL2);
-    printf("Eigenvector (0,0) error (Inf) : %10.5e \n",eigVecErrorInf);
+    printf("\nXXXX   Eigenvector errors using stopping condition DEFAULT = COMBINATION \n");
+    printf("XXXX   Expected maximal error is sqrt(tolerance specified) =  %10.5e \n\n",std::sqrt(subspaceTol));
+
+    printf("Eigenvector (2,2) error (L2)  : %10.5e \n",eigVecErrorL2);
+    printf("Eigenvector (2,2) error (Inf) : %10.5e \n",eigVecErrorInf);
    
-    // Sample run again with alternate parameter settings
-    
-    // setStopCondition values 
+//////////////////////////////////////////////////////////////////////////////////////
+//           Re-computation of the eigensystem and evaluation of the error
+//           with stopping condition set to RESIDUAL_ONLY
+//////////////////////////////////////////////////////////////////////////////////////
+
+    //
+    // Resetting the stopping condition
+    //
+    // Stopping condition type is one of  DEFAULT, COMBINATION, RESIDUAL_ONLY, EIGENVALUE_ONLY
     //
     // One of  DEFAULT, COMBINATION, RESIDUAL_ONLY, EIGENVALUE_ONLY  
     //
@@ -295,7 +360,6 @@ int main()
     std::string stopCondition = "RESIDUAL_ONLY";
     RCeigProcedure.setStopCondition(stopCondition);
    
-    
     dimension             = vTmp.getDimension();   
     subspaceTol           = 2.0e-4;              // Sets the stopping tolerance for the eigenvectors 
                                                  // when RESIDUAL_ONLY is specified for stop condition            
@@ -309,18 +373,16 @@ int main()
     eigVectors.clear();
     
     printf("\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
-    
-    printf("XXXX   LaplaceOp2dEig_Test Results XXXX\n\n");
-    printf("XXXX   Operator implemented as finite difference operator XXXX\n");
-    printf("XXXX   Using residual only stopping condition \n");
+    printf("XXXX   LaplaceOp2dEigTest_FD Results XXXX\n\n");
+    printf("XXXX   Using RESIDUAL_ONLY stopping condition \n");
     printf("XXXX   Tolerance Specified : %10.5e\n\n",subspaceTol);
-    
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
     
     RCeigProcedure.getMinEigenSystem(eigCount, subspaceTol, subspaceIncrementSize, bufferSize, vTmp,
     		Lop2d, randomOp, eigValues, eigVectors);
 
-
+    printf("\nXXXX   Eigenvalue errors using stopping condition RESIDUAL_ONLY \n");
+    printf("XXXX   Expected maximal error is (tolerance specified)^2 =  %10.5e \n\n",subspaceTol*subspaceTol);
 
     printf("       Eigenvalue              Error       Relative Error \n");
     
@@ -331,7 +393,7 @@ int main()
     }
     
     //
-    // Check error in the first distinct computed eigenvector (k1 = 1 and k2=1) 
+    // Check error in the second distinct computed eigenvector (k1 = 2 and k2=2)
     //
     
     for(long i = 0; i <= xPanels; i++)
@@ -340,7 +402,7 @@ int main()
     {
     x = xMin + i*hx;
     y = yMin + j*hy;
-    exactEigVector(i,j) = std::sin((pi*(x-xMin))/(xMax-xMin))*std::sin((pi*(y-yMin))/(yMax-yMin));
+    exactEigVector(i,j) = std::sin((2.0*pi*(x-xMin))/(xMax-xMin))*std::sin((2.0*pi*(y-yMin))/(yMax-yMin));
     }}
     
     // normalize 
@@ -349,19 +411,21 @@ int main()
     
     // fix up the sign if necessary 
 
-    if(exactEigVector.dot(eigVectors[0]) < 0) {exactEigVector *= -1.0;} 
+    if(exactEigVector.dot(eigVectors[3]) < 0) {exactEigVector *= -1.0;}
     
     // Compute the error 
     
     eigVecError =  exactEigVector;
-    eigVecError -= eigVectors[0];
+    eigVecError -= eigVectors[3];
     
     eigVecErrorL2   = eigVecError.norm2();
     eigVecErrorInf = eigVecError.normInf();
     
+    printf("\nXXXX   Eigenvector errors using stopping condition RESIDUAL_ONLY\n");
+    printf("XXXX   Expected maximal error is tolerance specified =  %10.5e \n\n",subspaceTol);
     
-    printf("\n\nEigenvector (0,0) error (L2)  : %10.5e \n",eigVecErrorL2);
-    printf("Eigenvector (0,0) error (Inf) : %10.5e \n",eigVecErrorInf);
+    printf("nEigenvector (2,2) error (L2)  : %10.5e \n",eigVecErrorL2);
+    printf("Eigenvector (2,2) error (Inf) : %10.5e \n",eigVecErrorInf);
 	printf("\nXXX Execution Completed XXXX\n");
 	return 0;
 

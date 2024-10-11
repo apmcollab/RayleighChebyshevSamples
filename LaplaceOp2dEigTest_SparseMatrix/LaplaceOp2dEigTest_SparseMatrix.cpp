@@ -1,10 +1,7 @@
-#include <iostream>
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <algorithm>
-//
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // LaplaceOp2dEigTest_SparseMatrix.cpp
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+// Laplace Operator 2D Eigensystem Test : Sparse matrix operator implementation
 //
 // A test code that demonstrates the use of the RayleighChebyshev procedure
 // to determine a specified number of eigenvalues and eigenvectors of
@@ -15,16 +12,11 @@
 // upon a vector space of dimension equal to the number of interior points
 // of a 2D rectangular grid. 
 //
-// To suppress the output of diagnostics change the arguments to
-// the following member functions to be false instread of true
-//
-// RCeigProcedure.setEigDiagnosticsFlag(true);
-// RCeigProcedure.setVerboseFlag(true);
+// The vector class used in this program is SCC::DoubleArray1d
 //
 // Both the sparse matrix class, SCC::SparseOp, and the randomize operator
 // class, SCC::RandVectorOp, are templated with respect to a vector class. 
 // 
-// The vector class used in this program is SCC::DoubleArray1d
 //
 // The compilation of this program does not require a Lapack installation. 
 //
@@ -68,10 +60,40 @@
 //
 // and then rerun the build steps above. 
 //
+// Reference:
 //
-// Oct. 10, 2024
+//   Christopher R. Anderson, "A Rayleigh-Chebyshev procedure for finding
+//   the smallest eigenvalues and associated eigenvectors of large sparse
+//   Hermitian matrices" Journal of Computational Physics,
+//   Volume 229 Issue 19, September, 2010.
 //
+// Created on: Oct 11, 2024
+//      Author: anderson
+//
+//#############################################################################
+//#
+//# Copyright  2024 Chris Anderson
+//#
+//# This program is free software: you can redistribute it and/or modify
+//# it under the terms of the Lesser GNU General Public License as published by
+//# the Free Software Foundation, either version 3 of the License, or
+//# (at your option) any later version.
+//#
+//# This program is distributed in the hope that it will be useful,
+//# but WITHOUT ANY WARRANTY; without even the implied warranty of
+//# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//# GNU General Public License for more details.
+//#
+//# For a copy of the GNU General Public License see
+//# <http://www.gnu.org/licenses/>.
+//#
+//#############################################################################
 
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <vector>
+#include <algorithm>
 
 #include "RayleighChebyshev/RayleighChebyshev.h" // RayleighChebyshev class
 
@@ -84,10 +106,9 @@
 #include "SparseOp/SCC_IndexMap2d.h"             // Utility class for setting up sparse matrix representation of 
                                                  // 2D finite difference operator
             
-            
 // Prototype for routine that sets up sparse matrix representation of 2D finite difference
 // operator. Implementation follows main(..)
-//                                     
+
 void setUpSparseOp(long xPanels, double xMin, double xMax, 
                    long yPanels, double yMin, double yMax, double alpha,
                    SCC::SparseOp<SCC::DoubleVector1d>& sOp);
@@ -116,7 +137,7 @@ int main()
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////
-//              Problem set up and construction of exact eigenvalues
+//                         Test problem set up
 //////////////////////////////////////////////////////////////////////////////////////
 
 //  Specifying parameters for 2d grid and Laplace operator coefficient
@@ -198,11 +219,6 @@ int main()
     // Vector class template argument - see RandVectorO.h file 
     // for information on the requirements of the vector class.    
      
-    // Allocate std::vector's for eigenvectors and eigenvalues
- 
-    std::vector <SCC::DoubleVector1d>    eigVectors;
-    std::vector <double>                  eigValues;
-
     // Declare an instance of the Raylegh-Chebyshev eigensystem procedure
 
     RayleighChebyshev < SCC::DoubleVector1d, SCC::SparseOp<SCC::DoubleVector1d>, SCC::RandVectorOp<SCC::DoubleVector1d> > RCeigProcedure;
@@ -210,8 +226,17 @@ int main()
     //                         |                     |                                         |
     //                 vector class          linear operator class                   randomize operator class
 
+
+    // Set diagnostics output
+
     RCeigProcedure.setEigDiagnosticsFlag(true);
     RCeigProcedure.setVerboseFlag(true);
+
+//////////////////////////////////////////////////////////////////////////////////////
+//                       Input/Output set up
+//////////////////////////////////////////////////////////////////////////////////////
+
+   // Creating input parameters
 
     long  systemSize = sOp.getRowDimension();
     
@@ -238,24 +263,30 @@ int main()
     //                                                  
     long eigCount              = dimension < 10 ? dimension : 10;
     
-    
+    // Allocate vectors for output of eigenvectors and eigenvalues
+
+    std::vector <SCC::DoubleVector1d>    eigVectors;
+    std::vector <double>                  eigValues;
+
 //////////////////////////////////////////////////////////////////////////////////////
 //           Computation of the eigensystem and evaluation of the error
 //////////////////////////////////////////////////////////////////////////////////////
-
     
     printf("\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
     
-    printf("XXXX   LaplaceOp2dEig_Test Results XXXX\n\n");
-    printf("XXXX   Operator implemented as finite difference operator XXXX\n");
+    printf("XXXX   LaplaceOp2dEigTest_SparseMatrix Results XXXX\n\n");
+    printf("XXXX   Operator implemented as sparse matrix XXXX\n");
     printf("XXXX   Using default parameters\n");
-    printf("XXXX   Tolerance Specified : %10.5e\n\n",subspaceTol);
-    
+    printf("XXXX   Tolerance specified : %10.5e\n\n",subspaceTol);
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
     
 
     RCeigProcedure.getMinEigenSystem(eigCount, subspaceTol, subspaceIncrementSize, bufferSize, vTmp,
     		       sOp, randomOp, eigValues, eigVectors);
+
+
+    printf("\nXXXX   Eigenvalue errors using stopping condition DEFAULT = COMBINATION \n");
+    printf("XXXX   Expected maximal error is tolerance specified =  %10.5e \n\n",subspaceTol);
 
     printf("       Eigenvalue              Error       Relative Error \n");
     
@@ -266,7 +297,7 @@ int main()
     }
     
     //
-    // Check error in the first distinct computed eigenvector (k1 = 1 and k2=1) 
+    // Check error in the second distinct computed eigenvector (k1 = 2 and k2 = 2)
     //
     
     SCC::IndexMap2d iMap(nx,ny); // Index mapping from 2D grid points to linear index 
@@ -284,7 +315,7 @@ int main()
     x = xMin + (i+1)*hx;
     y = yMin + (j+1)*hy;
     k = iMap.linearIndex(i,j);
-    exactEigVector(k) = std::sin((pi*(x-xMin))/(xMax-xMin))*std::sin((pi*(y-yMin))/(yMax-yMin));
+    exactEigVector(k) = std::sin((2.0*pi*(x-xMin))/(xMax-xMin))*std::sin((2.0*pi*(y-yMin))/(yMax-yMin));
     }}
     
     // normalize 
@@ -293,25 +324,29 @@ int main()
     
     // fix up the sign if necessary 
 
-    if(exactEigVector.dot(eigVectors[0]) < 0) {exactEigVector *= -1.0;} 
+    if(exactEigVector.dot(eigVectors[3]) < 0) {exactEigVector *= -1.0;}
     
     // Compute the error 
     
     SCC::DoubleVector1d eigVecError =  exactEigVector;
-    eigVecError -= eigVectors[0];
+    eigVecError -= eigVectors[3];
     
     double eigVecErrorL2   = eigVecError.norm2();
     double eigVecErrorInf = eigVecError.normInf();
     
-    
-    printf("\n\nEigenvector (0,0) error (L2)  : %10.5e \n",eigVecErrorL2);
-    printf("Eigenvector (0,0) error (Inf) : %10.5e \n",eigVecErrorInf);
+    printf("\nXXXX   Eigenvector errors using stopping condition DEFAULT = COMBINATION \n");
+    printf("XXXX   Expected maximal error is sqrt(tolerance specified) =  %10.5e \n\n",std::sqrt(subspaceTol));
+
+    printf("Eigenvector (2,2) error (L2)  : %10.5e \n",eigVecErrorL2);
+    printf("Eigenvector (2,2) error (Inf) : %10.5e \n",eigVecErrorInf);
     
     
 //////////////////////////////////////////////////////////////////////////////////////
-//           Computation of the eigensystem and evaluation of the error
-//            Sample run with stopping condition type RESIDUAL_ONLY
+//           Re-computation of the eigensystem and evaluation of the error
+//           with stopping condition set to RESIDUAL_ONLY
 //////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Resetting the stopping condition
     //
     // Stopping condition type is one of  DEFAULT, COMBINATION, RESIDUAL_ONLY, EIGENVALUE_ONLY  
     //
@@ -357,15 +392,16 @@ int main()
     
     printf("\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
     
-    printf("XXXX   LaplaceOp2dEig_Test Results XXXX\n\n");
-    printf("XXXX   Operator implemented as finite difference operator XXXX\n");
-    printf("XXXX   Using residual only stopping condition \n");
+    printf("XXXX   LaplaceOp2dEigTest_SparseMatrix Results XXXX\n\n");
+    printf("XXXX   Using RESIDUAL_ONLY stopping condition \n");
     printf("XXXX   Tolerance Specified : %10.5e\n\n",subspaceTol);
-    
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n");
     
     RCeigProcedure.getMinEigenSystem(eigCount, subspaceTol, subspaceIncrementSize, bufferSize, vTmp,
     		sOp, randomOp, eigValues, eigVectors);
+
+    printf("\nXXXX   Eigenvalue errors using stopping condition RESIDUAL_ONLY \n");
+    printf("XXXX   Expected maximal error is (tolerance specified)^2 =  %10.5e \n\n",subspaceTol*subspaceTol);
 
     printf("       Eigenvalue              Error       Relative Error \n");
     
@@ -376,7 +412,7 @@ int main()
     }
     
     //
-    // Check error in the first distinct computed eigenvector (k1 = 1 and k2=1) 
+    // Check error in the second distinct computed eigenvector (k1 = 2 and k2 = 2)
     //
     
     for(long i = 0; i < nx; i++)
@@ -386,7 +422,7 @@ int main()
     x = xMin + (i+1)*hx;
     y = yMin + (j+1)*hy;
     k = iMap.linearIndex(i,j);
-    exactEigVector(k) = std::sin((pi*(x-xMin))/(xMax-xMin))*std::sin((pi*(y-yMin))/(yMax-yMin));
+    exactEigVector(k) = std::sin((2.0*pi*(x-xMin))/(xMax-xMin))*std::sin((2.0*pi*(y-yMin))/(yMax-yMin));
     }}
     
     // normalize 
@@ -395,35 +431,46 @@ int main()
     
     // fix up the sign if necessary 
 
-    if(exactEigVector.dot(eigVectors[0]) < 0) {exactEigVector *= -1.0;} 
+    if(exactEigVector.dot(eigVectors[3]) < 0) {exactEigVector *= -1.0;}
     
     // Compute the error 
     
     eigVecError =  exactEigVector;
-    eigVecError -= eigVectors[0];
+    eigVecError -= eigVectors[3];
     
     eigVecErrorL2   = eigVecError.norm2();
     eigVecErrorInf = eigVecError.normInf();
     
+    printf("\nXXXX   Eigenvector errors using stopping condition RESIDUAL_ONLY\n");
+    printf("XXXX   Expected maximal error is tolerance specified =  %10.5e \n\n",subspaceTol);
     
-    printf("\n\nEigenvector (0,0) error (L2)  : %10.5e \n",eigVecErrorL2);
-    printf("Eigenvector (0,0) error (Inf) : %10.5e \n",eigVecErrorInf);
+    printf("nEigenvector (2,2) error (L2)  : %10.5e \n",eigVecErrorL2);
+    printf("Eigenvector (2,2) error (Inf) : %10.5e \n",eigVecErrorInf);
+
 	printf("\nXXX Execution Completed XXXX\n");
 	return 0;
 
 }
 
 
-// This routine sets up a sparse matrix representation of 
-// the five point discretization to the Laplace operator with
-// homogeneous Dirichlet boundary conditions. 
+/*
+ *  This routine setUpSparseOp sets up a sparse matrix representation of 
+ *  the 5-point finite difference discrete Laplace operator with Dirichlet 
+ *  boundary conditions for a uniform rectangular grid on a rectangular region.
+ *
+ *  The apply operator of the sparse matrix class applies the 
+ *  difference operator
+ *
+ *          alpha*[(D+D-)_x + (D+D-)_y]
+ *
+ *  to the vector of values associated with the interior values of a grid 
+ *  for the domain [xMin,xMax] X [yMin,yMax] that has xPanels panels 
+ *  in the x-direction and yPanels panels in the y-direction.
+ *
+ *  The dimension of the linear system n = (xPanels-1)*(yPanels-1)
+ *
+ */
 
-// The underlying grid is a grid for the domain [xMin,xMax] X [yMin,yMax] that 
-// has xPanels panels in the x-direction, yPanels panels in the y-direction.
-// The unknowns are the interior grid points and hence the dimension of the 
-// linear system n = (xPanels-1)*(yPanels-1).
-//
-//  
 void setUpSparseOp(long xPanels, double xMin, double xMax, 
 long yPanels, double yMin, double yMax, double alpha,SCC::SparseOp<SCC::DoubleVector1d>& sOp)
 {
@@ -432,10 +479,7 @@ long yPanels, double yMin, double yMax, double alpha,SCC::SparseOp<SCC::DoubleVe
     
     long   n = nx*ny; // dimension of the linear system
     
-	double LX   = (xMax-xMin);
 	double hx   = (xMax-xMin)/(double)(xPanels);
-
-	double LY   = (yMax-yMin);
 	double hy   = (yMax-yMin)/(double)(yPanels);
 
     long   rowDimension  = n;

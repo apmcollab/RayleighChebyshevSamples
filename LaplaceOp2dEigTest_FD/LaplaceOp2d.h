@@ -5,16 +5,34 @@
 
 /**
  *                       Class LaplaceOp2d
- *  A class whose apply member function implements the 5-point finite difference
+ *  A class whose apply(...) member function implements the 5-point finite difference
  *  discrete Laplace operator with Dirichlet boundary conditions.
  *
  *  The apply operator of this class applies the difference operator
  *
  *          alpha*[(D+D-)_x + (D+D-)_y]
  *
- *  at all interior values of an SCC::GridFunction2d and sets the boundary values to 0.0
+ *  at all interior values of an SCC::GridFunction2d and
+ *  sets the boundary values to 0.0
  */
-
+//#############################################################################
+//#
+//# Copyright  2024 Chris Anderson
+//#
+//# This program is free software: you can redistribute it and/or modify
+//# it under the terms of the Lesser GNU General Public License as published by
+//# the Free Software Foundation, either version 3 of the License, or
+//# (at your option) any later version.
+//#
+//# This program is distributed in the hope that it will be useful,
+//# but WITHOUT ANY WARRANTY; without even the implied warranty of
+//# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//# GNU General Public License for more details.
+//#
+//# For a copy of the GNU General Public License see
+//# <http://www.gnu.org/licenses/>.
+//#
+//#############################################################################
 #ifndef LAPLACE_OP_2D_
 #define LAPLACE_OP_2D_
 
@@ -59,7 +77,7 @@ public:
 	the interior grid points associated with a uniform discretization
 	of a 2D rectangular domain.
 
-	Input  : SCC_GriddFunction2d class instance whose values are those of a uniform 2D grid.
+	Input  : SCC_GridFunction2d class instance whose values are those of a uniform 2D grid.
 	         The function values associated with this class are the values at both the interior
 	         and boundary points of the discretization.
 

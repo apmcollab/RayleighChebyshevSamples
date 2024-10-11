@@ -8,5 +8,8 @@ build
 *.exe
 *.obj
 *.o
+.cproject
+.project
+.settings
 CMakeCreatorFiles
 CMake*.xml
