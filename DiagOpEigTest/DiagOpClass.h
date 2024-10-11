@@ -6,7 +6,7 @@
  *
  *
  * This class implements an apply(...)  operator in which each entry of the input vector
- * is multiplied by it's index + 1 (Indexing starting from 0).
+ * is multiplied by it's index + 1 (indexing starting from 0).
  *
  *
  *
