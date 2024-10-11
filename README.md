@@ -10,11 +10,11 @@ The RayleighChebyshev class instances are templated with respect to three classe
  
 (c) A randomize operator class that when applied to an instance of the vector class sets the vector elements to have random entries.
 
-The primary sample, and the sample one should look at first, is DiagOpTest, a self-contained sample that computes the eigenpairs of a diagonal operator. Instances of the classes (a)-(c) that satisfy the template requirements are included in the DiagOpTest directory. 
+The primary sample, and the sample one should look at first, is DiagOpEigTest, a self-contained sample that computes the eigenpairs of a diagonal operator. Instances of the classes (a)-(c) that satisfy the template requirements are included in the DiagOpEigTest directory. 
 
 Note: The convergence behavior of the RayleighChebyshev procedure is determined by the distribution of the eigenvalues of the linear operator. The convergence is not influenced by the structure of the operator so testing the procedure using a diagonal operator is just as useful as testing the procedure on a non-diagonal operator.
 
-The other samples illustrate the use of RayleighChebyshev with pre-existing operator and vector classes. These examples were constructed by altering the DiagOpTest sample and replacing the classes it uses with the operator and vector classes associated with other types of linear operator and vector classes. 
+The other samples illustrate the use of RayleighChebyshev with pre-existing operator and vector classes. These examples were constructed by altering the DiagOpEigTest sample and replacing the classes it uses with the operator and vector classes associated with other types of linear operator and vector classes. 
 
 Build instructions, either by command line or using CMake, are described in the test programs. 
 

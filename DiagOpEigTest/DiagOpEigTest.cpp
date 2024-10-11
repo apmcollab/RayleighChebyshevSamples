@@ -1,6 +1,6 @@
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//                          DiagOpTest.cpp
+//                          DiagOpEigTest.cpp
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // A test code that demonstrates the use of the RayleighChebyshev procedure
 // to determine a specified number of eigenvalues and eigenvectors of
